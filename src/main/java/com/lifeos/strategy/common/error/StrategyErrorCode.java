@@ -27,7 +27,16 @@ public enum StrategyErrorCode implements ErrorCode {
     STRATEGY_PLAN_STATUS(409, "Weekly plan status does not allow this"),
 
     /** The decision's status does not allow the operation, e.g. editing a decision that was already made. */
-    STRATEGY_DECISION_STATUS(409, "Decision status does not allow this");
+    STRATEGY_DECISION_STATUS(409, "Decision status does not allow this"),
+
+    /** The idea's status does not allow the operation, e.g. activating a dropped idea. */
+    STRATEGY_IDEA_STATUS(409, "Idea status does not allow this"),
+
+    /** Only an idea whose latest evaluation says PURSUE can become active. */
+    STRATEGY_IDEA_NOT_PURSUED(409, "Idea not evaluated as worth pursuing"),
+
+    /** Two ideas are already active; shelve, drop or promote one first. */
+    STRATEGY_ACTIVE_IDEA_LIMIT(409, "Active idea limit reached");
 
     private final int status;
     private final String title;
