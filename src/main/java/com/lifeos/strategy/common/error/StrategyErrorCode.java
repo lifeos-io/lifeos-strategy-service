@@ -24,7 +24,10 @@ public enum StrategyErrorCode implements ErrorCode {
     STRATEGY_PLAN_ALREADY_ACTIVE(409, "Another weekly plan is active"),
 
     /** The plan's status does not allow the operation, e.g. editing a closed week. */
-    STRATEGY_PLAN_STATUS(409, "Weekly plan status does not allow this");
+    STRATEGY_PLAN_STATUS(409, "Weekly plan status does not allow this"),
+
+    /** The decision's status does not allow the operation, e.g. editing a decision that was already made. */
+    STRATEGY_DECISION_STATUS(409, "Decision status does not allow this");
 
     private final int status;
     private final String title;
