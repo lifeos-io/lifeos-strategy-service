@@ -4,6 +4,8 @@ import com.lifeos.base.error.CommonErrorCode;
 import com.lifeos.base.error.LifeOsException;
 import com.lifeos.base.messaging.outbox.Outbox;
 import com.lifeos.base.messaging.outbox.OutboxMessage;
+import com.lifeos.strategy.action.entity.Action;
+import com.lifeos.strategy.action.repository.ActionRepository;
 import com.lifeos.strategy.common.error.FieldErrors;
 import com.lifeos.strategy.common.error.StrategyErrorCode;
 import com.lifeos.strategy.common.time.IsoWeeks;
@@ -44,17 +46,19 @@ public class WeeklyPlanServiceImpl implements WeeklyPlanService {
     private final WeeklyPlanRepository repository;
     private final GoalRepository goalRepository;
     private final StrategyVersionRepository strategyVersionRepository;
+    private final ActionRepository actionRepository;
     private final ProfileService profileService;
     private final WeeklyPlanMapper weeklyPlanMapper;
     private final Outbox outbox;
     private final Clock clock;
 
     public WeeklyPlanServiceImpl(WeeklyPlanRepository repository, GoalRepository goalRepository,
-            StrategyVersionRepository strategyVersionRepository, ProfileService profileService,
-            WeeklyPlanMapper weeklyPlanMapper, Outbox outbox, Clock clock) {
+            StrategyVersionRepository strategyVersionRepository, ActionRepository actionRepository,
+            ProfileService profileService, WeeklyPlanMapper weeklyPlanMapper, Outbox outbox, Clock clock) {
         this.repository = repository;
         this.goalRepository = goalRepository;
         this.strategyVersionRepository = strategyVersionRepository;
+        this.actionRepository = actionRepository;
         this.profileService = profileService;
         this.weeklyPlanMapper = weeklyPlanMapper;
         this.outbox = outbox;
@@ -112,6 +116,8 @@ public class WeeklyPlanServiceImpl implements WeeklyPlanService {
                 : toAllocations(userId, request.allocations(), plan.getStatus() == WeeklyPlanStatus.ACTIVE);
         int capacity = request.capacityMinutes() != null ? request.capacityMinutes() : plan.getCapacityMinutes();
         requireWithinCapacity(capacity, allocations != null ? allocations : plan.getAllocations());
+        List<Action> actions = actionRepository.findByWeeklyPlanIdOrderBySortOrderAscCreatedAtAsc(plan.getId());
+        requireActionsFit(capacity, allocations, actions);
 
         int previousCapacity = plan.getCapacityMinutes();
         if (plan.update(request.capacityMinutes(), strip(request.headline()), allocations, clock.instant())) {
@@ -144,10 +150,38 @@ public class WeeklyPlanServiceImpl implements WeeklyPlanService {
         plan.activate(currentStrategyVersions(plan.getAllocations().stream().map(GoalAllocation::getGoalId).toList()),
                 clock.instant());
         repository.saveAndFlush(plan);
-        // Actions arrive with the next part of the weekly plan; until then nothing is planned in detail.
+        // A draft's actions are all PLANNED (statuses change only in the active week).
+        List<Action> actions = actionRepository.findByWeeklyPlanIdOrderBySortOrderAscCreatedAtAsc(plan.getId());
+        int plannedMinutes = actions.stream().mapToInt(Action::getEstimateMinutes).sum();
         outbox.append(new OutboxMessage("WeeklyPlan", plan.getId(), userId, WeeklyPlanActivatedV1.TYPE,
-                WeeklyPlanActivatedV1.VERSION, weeklyPlanMapper.toActivatedEvent(plan, 0, 0)));
+                WeeklyPlanActivatedV1.VERSION,
+                weeklyPlanMapper.toActivatedEvent(plan, actions.size(), plannedMinutes)));
         return weeklyPlanMapper.toResponse(plan);
+    }
+
+    /**
+     * The week's actions must still fit: their estimates (dropped ones aside) within the capacity, and their
+     * goals still in the split when it is replaced.
+     */
+    private static void requireActionsFit(int capacityMinutes, List<GoalAllocation> allocations,
+            List<Action> actions) {
+        int plannedMinutes = actions.stream()
+                .filter(Action::countsAgainstCapacity)
+                .mapToInt(Action::getEstimateMinutes)
+                .sum();
+        if (plannedMinutes > capacityMinutes) {
+            throw new LifeOsException(StrategyErrorCode.STRATEGY_CAPACITY_EXCEEDED,
+                    "The week's actions take " + plannedMinutes + " minutes but the week would have only "
+                            + capacityMinutes + ".",
+                    Map.of("capacityMinutes", capacityMinutes, "plannedMinutes", plannedMinutes));
+        }
+        if (allocations != null) {
+            Set<UUID> kept = allocations.stream().map(GoalAllocation::getGoalId).collect(Collectors.toSet());
+            boolean orphaned = actions.stream().anyMatch(action -> !kept.containsAll(action.getGoalIds()));
+            if (orphaned) {
+                throw FieldErrors.invalid("allocations", "a removed goal still has actions in this week");
+            }
+        }
     }
 
     @Override
