@@ -2,6 +2,7 @@ package com.lifeos.strategy.evidence.repository;
 
 import com.lifeos.strategy.evidence.entity.Evidence;
 import com.lifeos.strategy.evidence.entity.EvidenceLevel;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,6 +13,9 @@ import org.springframework.data.repository.query.Param;
 public interface EvidenceRepository extends JpaRepository<Evidence, UUID> {
 
     Optional<Evidence> findByIdAndUserId(UUID id, UUID userId);
+
+    /** Evidence that occurred between {@code from} and {@code to}, both inclusive (e.g. one week). */
+    long countByUserIdAndOccurredOnBetween(UUID userId, LocalDate from, LocalDate to);
 
     /** Most recent first; a {@code null} filter matches everything. */
     @Query("""

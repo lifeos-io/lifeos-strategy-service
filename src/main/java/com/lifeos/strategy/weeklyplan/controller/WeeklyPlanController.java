@@ -63,7 +63,7 @@ public class WeeklyPlanController {
         return weeklyPlanService.activate(userId, isoWeek);
     }
 
-    /** Ends the week (ACTIVE → CLOSED); later done by the weekly review. */
+    /** Ends the week (ACTIVE → CLOSED) without a review; {@code POST /{isoWeek}/review} closes it with one. */
     @PostMapping("/{isoWeek}/close")
     public WeeklyPlanResponse close(@CurrentUser UUID userId, @PathVariable String isoWeek) {
         return weeklyPlanService.close(userId, isoWeek);
