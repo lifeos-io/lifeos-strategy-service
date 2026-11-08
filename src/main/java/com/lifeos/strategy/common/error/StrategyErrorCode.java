@@ -36,7 +36,13 @@ public enum StrategyErrorCode implements ErrorCode {
     STRATEGY_IDEA_NOT_PURSUED(409, "Idea not evaluated as worth pursuing"),
 
     /** Two ideas are already active; shelve, drop or promote one first. */
-    STRATEGY_ACTIVE_IDEA_LIMIT(409, "Active idea limit reached");
+    STRATEGY_ACTIVE_IDEA_LIMIT(409, "Active idea limit reached"),
+
+    /** The proposal was already decided (accepted, rejected or superseded). */
+    STRATEGY_PROPOSAL_STATUS(409, "Proposal already decided"),
+
+    /** The strategy changed since Coach made the proposal, so it can no longer be applied as it is. */
+    STRATEGY_PROPOSAL_OUTDATED(409, "Proposal is outdated");
 
     private final int status;
     private final String title;

@@ -13,6 +13,9 @@ spring:
     enabled: true
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      # A new consumer group (first deployment) starts from the oldest event, so no recommendation is missed.
+      auto-offset-reset: earliest
   security:
     oauth2:
       resourceserver:

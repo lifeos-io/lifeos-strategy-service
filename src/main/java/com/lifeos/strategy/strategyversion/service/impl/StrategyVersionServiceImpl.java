@@ -58,6 +58,13 @@ public class StrategyVersionServiceImpl implements StrategyVersionService {
     @Override
     @Transactional
     public StrategyVersionResponse create(UUID userId, UUID goalId, CreateStrategyVersionRequest request) {
+        return create(userId, goalId, request, null);
+    }
+
+    @Override
+    @Transactional
+    public StrategyVersionResponse create(UUID userId, UUID goalId, CreateStrategyVersionRequest request,
+            UUID sourceProposalId) {
         Goal goal = goalRepository.findForUpdate(goalId, userId).orElseThrow(StrategyVersionServiceImpl::goalNotFound);
         if (!goal.getStatus().isOpen()) {
             throw new LifeOsException(StrategyErrorCode.STRATEGY_GOAL_CLOSED,
@@ -79,7 +86,8 @@ public class StrategyVersionServiceImpl implements StrategyVersionService {
             repository.saveAndFlush(previous);
         });
         StrategyVersion version = StrategyVersion.create(goalId, userId, currentNo == null ? 1 : currentNo + 1,
-                request.summary().strip(), changeReason, null, request.effortAllocation(), clock.instant());
+                request.summary().strip(), changeReason, sourceProposalId, request.effortAllocation(),
+                clock.instant());
         for (PhaseRequest phase : request.phases()) {
             version.addPhase(phase.phaseKey() != null ? phase.phaseKey() : UuidV7.next(), phase.title().strip(),
                     phase.startsOn(), phase.endsOn(), strip(phase.exitCriteria()), phase.status());
