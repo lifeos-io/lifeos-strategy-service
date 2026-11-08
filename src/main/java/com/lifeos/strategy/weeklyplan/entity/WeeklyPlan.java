@@ -154,7 +154,7 @@ public class WeeklyPlan extends AssignedIdEntity {
         }
         throw new LifeOsException(StrategyErrorCode.STRATEGY_PLAN_STATUS,
                 "The plan for " + isoWeek + " is " + status.name().toLowerCase() + "; this is not possible now.",
-                Map.of("status", status.name()));
+                Map.of("currentStatus", status.name()));
     }
 
     public UUID getId() {

@@ -147,7 +147,7 @@ public class Decision extends AssignedIdEntity {
             throw new LifeOsException(StrategyErrorCode.STRATEGY_DECISION_STATUS,
                     "This decision is " + status.name().toLowerCase() + "; this needs it to be "
                             + expected.name().toLowerCase() + ".",
-                    Map.of("status", status.name()));
+                    Map.of("currentStatus", status.name()));
         }
     }
 

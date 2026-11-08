@@ -97,7 +97,8 @@ class ActionIntegrationTest extends IntegrationTest {
         String blog = id(addAction(week, "Blog post", 60, null));
         changeStatus(week, done, 0, "DONE")
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("STRATEGY_PLAN_STATUS"));
+                .andExpect(jsonPath("$.code").value("STRATEGY_PLAN_STATUS"))
+                .andExpect(jsonPath("$.currentStatus").value("DRAFT"));
         activate(week);
 
         changeStatus(week, done, 0, "DONE")
@@ -145,7 +146,8 @@ class ActionIntegrationTest extends IntegrationTest {
                 .andExpect(jsonPath("$.code").value("STRATEGY_CAPACITY_EXCEEDED"));
         mockMvc.perform(delete(actions(W46) + "/" + big).with(as(week.user())))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("STRATEGY_PLAN_STATUS"));
+                .andExpect(jsonPath("$.code").value("STRATEGY_PLAN_STATUS"))
+                .andExpect(jsonPath("$.currentStatus").value("ACTIVE"));
     }
 
     @Test

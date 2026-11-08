@@ -79,7 +79,8 @@ class DecisionIntegrationTest extends IntegrationTest {
         String decision = id(draft(setup, true));
         close(setup, decision, 0)
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("STRATEGY_DECISION_STATUS"));
+                .andExpect(jsonPath("$.code").value("STRATEGY_DECISION_STATUS"))
+                .andExpect(jsonPath("$.currentStatus").value("DRAFT"));
         decide(setup, decision, 0, "B", NEXT_MONTH).andExpect(status().isOk());
 
         mockMvc.perform(put("/api/strategy/decisions/" + decision).with(as(setup.user()))

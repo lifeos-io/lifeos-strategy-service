@@ -121,7 +121,7 @@ public class ActionServiceImpl implements ActionService {
             throw new LifeOsException(StrategyErrorCode.STRATEGY_PLAN_STATUS,
                     "Actions change status only in the active week; " + isoWeek + " is "
                             + plan.getStatus().name().toLowerCase() + ".",
-                    Map.of("status", plan.getStatus().name()));
+                    Map.of("currentStatus", plan.getStatus().name()));
         }
         if (!action.countsAgainstCapacity() && request.status() != ActionStatus.DROPPED) {
             // Picking a dropped action up again puts its estimate back on the week.
@@ -144,7 +144,7 @@ public class ActionServiceImpl implements ActionService {
         if (plan.getStatus() != WeeklyPlanStatus.DRAFT) {
             throw new LifeOsException(StrategyErrorCode.STRATEGY_PLAN_STATUS,
                     "Only a draft week's actions can be deleted; drop the action instead.",
-                    Map.of("status", plan.getStatus().name()));
+                    Map.of("currentStatus", plan.getStatus().name()));
         }
         repository.delete(action);
     }

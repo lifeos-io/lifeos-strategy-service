@@ -150,7 +150,8 @@ class WeeklyPlanIntegrationTest extends IntegrationTest {
         mockMvc.perform(post(plan(W46) + "/close").with(as(user))).andExpect(status().isOk());
         update(user, W46, 2, "{\"headline\": \"Too late\"}")
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("STRATEGY_PLAN_STATUS"));
+                .andExpect(jsonPath("$.code").value("STRATEGY_PLAN_STATUS"))
+                .andExpect(jsonPath("$.currentStatus").value("CLOSED"));
         mockMvc.perform(post(plan(W46) + "/activate").with(as(user)))
                 .andExpect(jsonPath("$.code").value("STRATEGY_PLAN_STATUS"));
     }

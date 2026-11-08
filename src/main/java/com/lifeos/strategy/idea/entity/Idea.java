@@ -159,7 +159,7 @@ public class Idea extends AssignedIdEntity {
         if (status.isClosed()) {
             throw new LifeOsException(StrategyErrorCode.STRATEGY_IDEA_STATUS,
                     "This idea is " + status.name().toLowerCase() + " and can no longer change.",
-                    Map.of("status", status.name()));
+                    Map.of("currentStatus", status.name()));
         }
     }
 
@@ -168,7 +168,7 @@ public class Idea extends AssignedIdEntity {
             throw new LifeOsException(StrategyErrorCode.STRATEGY_IDEA_STATUS,
                     "An idea that is " + status.name().toLowerCase() + " cannot become "
                             + target.name().toLowerCase() + ".",
-                    Map.of("status", status.name(), "target", target.name()));
+                    Map.of("currentStatus", status.name(), "target", target.name()));
         }
     }
 

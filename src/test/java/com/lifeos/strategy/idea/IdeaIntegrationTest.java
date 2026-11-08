@@ -149,7 +149,9 @@ class IdeaIntegrationTest extends IntegrationTest {
                 .andExpect(jsonPath("$.code").value("STRATEGY_IDEA_STATUS"));
         promote(setup, idea, setup.goal())
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("STRATEGY_IDEA_STATUS"));
+                .andExpect(jsonPath("$.code").value("STRATEGY_IDEA_STATUS"))
+                .andExpect(jsonPath("$.currentStatus").value("INBOX"))
+                .andExpect(jsonPath("$.target").value("PROMOTED"));
         shelve(setup, idea).andExpect(jsonPath("$.status").value("SHELVED"));
         evaluate(setup, idea, "PURSUE");
         activate(setup, idea)
@@ -169,7 +171,8 @@ class IdeaIntegrationTest extends IntegrationTest {
 
         update(setup, idea, 1, "{\"title\": \"Changed\"}")
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("STRATEGY_IDEA_STATUS"));
+                .andExpect(jsonPath("$.code").value("STRATEGY_IDEA_STATUS"))
+                .andExpect(jsonPath("$.currentStatus").value("DROPPED"));
         evaluate(setup, idea, "PURSUE")
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("STRATEGY_IDEA_STATUS"));
