@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: lifeos-strategy-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/strategy}
+    username: ${DB_USERNAME:strategy}
+    password: ${DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+server:
+  port: 8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
