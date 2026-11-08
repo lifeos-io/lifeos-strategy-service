@@ -1,5 +1,6 @@
 package com.lifeos.strategy.profile.entity;
 
+import com.lifeos.strategy.common.persistence.AssignedIdEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -14,7 +15,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "user_profile")
-public class UserProfile {
+public class UserProfile extends AssignedIdEntity {
 
     @Id
     private UUID userId;
@@ -66,6 +67,12 @@ public class UserProfile {
             updatedAt = Objects.requireNonNull(now);
         }
         return changed;
+    }
+
+    /** The profile is keyed by the user ID. */
+    @Override
+    public UUID getId() {
+        return userId;
     }
 
     public UUID getUserId() {

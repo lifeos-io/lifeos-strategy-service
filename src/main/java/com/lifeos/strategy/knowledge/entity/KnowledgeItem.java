@@ -1,5 +1,6 @@
 package com.lifeos.strategy.knowledge.entity;
 
+import com.lifeos.strategy.common.persistence.AssignedIdEntity;
 import com.lifeos.base.id.UuidV7;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,7 +20,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "knowledge_item")
-public class KnowledgeItem {
+public class KnowledgeItem extends AssignedIdEntity {
 
     @Id
     private UUID id;

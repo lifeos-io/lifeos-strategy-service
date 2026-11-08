@@ -1,5 +1,6 @@
 package com.lifeos.strategy.strategyversion.entity;
 
+import com.lifeos.strategy.common.persistence.AssignedIdEntity;
 import com.lifeos.base.id.UuidV7;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
@@ -31,7 +32,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "strategy_version")
-public class StrategyVersion {
+public class StrategyVersion extends AssignedIdEntity {
 
     @Id
     private UUID id;

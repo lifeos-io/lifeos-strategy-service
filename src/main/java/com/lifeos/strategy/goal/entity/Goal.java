@@ -1,5 +1,6 @@
 package com.lifeos.strategy.goal.entity;
 
+import com.lifeos.strategy.common.persistence.AssignedIdEntity;
 import com.lifeos.base.error.LifeOsException;
 import com.lifeos.base.id.UuidV7;
 import com.lifeos.strategy.common.error.FieldErrors;
@@ -23,7 +24,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "goal")
-public class Goal {
+public class Goal extends AssignedIdEntity {
 
     @Id
     private UUID id;
