@@ -40,9 +40,12 @@ public class UserDeletionConsumer {
         this.accountDeletionService = accountDeletionService;
     }
 
+    // Own retry and dead-letter topics: Trigger also consumes this topic with retries, and its dead letters must
+    // not reach this handler.
     @RetryableTopic(exclude = MalformedEventException.class,
             attempts = "${lifeos.strategy.identity.deletion-attempts:8}",
-            backOff = @BackOff(delayString = "${lifeos.strategy.identity.retry-delay-ms:60000}"))
+            backOff = @BackOff(delayString = "${lifeos.strategy.identity.retry-delay-ms:60000}"),
+            retryTopicSuffix = "-strategy-identity-retry", dltTopicSuffix = "-strategy-identity-dlt")
     @KafkaListener(topics = "${lifeos.messaging.outbox.topic}", groupId = "strategy-identity")
     public void on(ConsumerRecord<String, String> record) {
         inbox.handle(INBOX_CONSUMER, record.value(), event -> {

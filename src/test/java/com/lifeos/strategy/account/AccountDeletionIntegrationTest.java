@@ -314,6 +314,6 @@ class AccountDeletionIntegrationTest extends IntegrationTest {
     }
 
     private static ConsumerRecord<String, String> record(String value) {
-        return new ConsumerRecord<>("lifeos.strategy.events.v1-dlt", 0, 0L, null, value);
+        return new ConsumerRecord<>("lifeos.strategy.events.v1-strategy-identity-dlt", 0, 0L, null, value);
     }
 }

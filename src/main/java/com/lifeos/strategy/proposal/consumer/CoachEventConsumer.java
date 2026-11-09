@@ -25,7 +25,9 @@ public class CoachEventConsumer {
         this.changeProposalService = changeProposalService;
     }
 
-    @RetryableTopic(exclude = MalformedEventException.class)
+    // Own retry and dead-letter topics, apart from other consumers of Coach's topic.
+    @RetryableTopic(exclude = MalformedEventException.class, retryTopicSuffix = "-strategy-retry",
+            dltTopicSuffix = "-strategy-dlt")
     @KafkaListener(topics = "${lifeos.strategy.coach-topic:lifeos.coach.events.v1}", groupId = "strategy")
     public void on(ConsumerRecord<String, String> record) {
         inbox.handle(record, event -> {
