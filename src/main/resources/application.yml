@@ -25,7 +25,8 @@ spring:
           keycloak-admin:
             provider: keycloak
             client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:lifeos-strategy}
-            client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:}
+            # The default is the local test value from lifeos-infra/local; every other environment sets it.
+            client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:lifeos-strategy-local-secret}
             authorization-grant-type: client_credentials
         provider:
           keycloak:
