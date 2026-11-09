@@ -18,6 +18,18 @@ spring:
       auto-offset-reset: earliest
   security:
     oauth2:
+      client:
+        # Strategy's own service account, for Keycloak's admin API (deleting a user's identity account).
+        # Keycloak: client "lifeos-strategy", service account with realm-management/manage-users only.
+        registration:
+          keycloak-admin:
+            provider: keycloak
+            client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:lifeos-strategy}
+            client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:}
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            token-uri: ${KEYCLOAK_BASE_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:lifeos}/protocol/openid-connect/token
       resourceserver:
         jwt:
           # Inner security layer: the service validates the JWT itself (lifeos-base-web).
@@ -40,3 +52,8 @@ lifeos:
       topic: lifeos.strategy.events.v1
     inbox:
       consumer: strategy
+  strategy:
+    identity:
+      admin-base-url: ${KEYCLOAK_BASE_URL:http://localhost:8180}
+      realm: ${KEYCLOAK_REALM:lifeos}
+      client-registration-id: keycloak-admin

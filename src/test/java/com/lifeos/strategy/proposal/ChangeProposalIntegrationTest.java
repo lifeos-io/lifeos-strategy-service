@@ -20,7 +20,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.BooleanSupplier;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -355,16 +354,6 @@ class ChangeProposalIntegrationTest extends IntegrationTest {
     private long proposalCount(UUID user) {
         return jdbcClient.sql("SELECT count(*) FROM change_proposal WHERE user_id = :user")
                 .param("user", user).query(Long.class).single();
-    }
-
-    private static void awaitTrue(Duration timeout, BooleanSupplier condition) throws InterruptedException {
-        Instant deadline = Instant.now().plus(timeout);
-        while (!condition.getAsBoolean()) {
-            if (Instant.now().isAfter(deadline)) {
-                throw new AssertionError("condition not met within " + timeout);
-            }
-            Thread.sleep(100);
-        }
     }
 
     private static String proposals() {

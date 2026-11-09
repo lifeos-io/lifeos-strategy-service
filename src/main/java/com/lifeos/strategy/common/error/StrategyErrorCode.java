@@ -42,7 +42,10 @@ public enum StrategyErrorCode implements ErrorCode {
     STRATEGY_PROPOSAL_STATUS(409, "Proposal already decided"),
 
     /** The strategy changed since Coach made the proposal, so it can no longer be applied as it is. */
-    STRATEGY_PROPOSAL_OUTDATED(409, "Proposal is outdated");
+    STRATEGY_PROPOSAL_OUTDATED(409, "Proposal is outdated"),
+
+    /** The user deleted their account (KVKK); a token issued before that cannot bring it back. */
+    STRATEGY_USER_DELETED(410, "Account deleted");
 
     private final int status;
     private final String title;
