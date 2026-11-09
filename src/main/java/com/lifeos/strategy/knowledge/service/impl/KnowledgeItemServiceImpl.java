@@ -5,6 +5,7 @@ import com.lifeos.base.error.LifeOsException;
 import com.lifeos.base.messaging.outbox.Outbox;
 import com.lifeos.base.messaging.outbox.OutboxMessage;
 import com.lifeos.strategy.common.error.StrategyErrorCode;
+import com.lifeos.strategy.decision.service.DecisionService;
 import com.lifeos.strategy.goal.entity.Goal;
 import com.lifeos.strategy.goal.repository.GoalRepository;
 import com.lifeos.strategy.knowledge.dto.CreateKnowledgeItemRequest;
@@ -30,14 +31,16 @@ public class KnowledgeItemServiceImpl implements KnowledgeItemService {
 
     private final KnowledgeItemRepository repository;
     private final GoalRepository goalRepository;
+    private final DecisionService decisionService;
     private final KnowledgeItemMapper knowledgeItemMapper;
     private final Outbox outbox;
     private final Clock clock;
 
     public KnowledgeItemServiceImpl(KnowledgeItemRepository repository, GoalRepository goalRepository,
-            KnowledgeItemMapper knowledgeItemMapper, Outbox outbox, Clock clock) {
+            DecisionService decisionService, KnowledgeItemMapper knowledgeItemMapper, Outbox outbox, Clock clock) {
         this.repository = repository;
         this.goalRepository = goalRepository;
+        this.decisionService = decisionService;
         this.knowledgeItemMapper = knowledgeItemMapper;
         this.outbox = outbox;
         this.clock = clock;
@@ -79,11 +82,16 @@ public class KnowledgeItemServiceImpl implements KnowledgeItemService {
                     Map.of("currentVersion", item.getVersion()));
         }
         requireOpen(loadGoal(userId, goalId));
+        KnowledgeStatus previousStatus = item.getStatus();
         boolean changed = item.update(strip(request.statement()), request.kind(), request.status(),
                 request.external(), strip(request.source()), strip(request.howToVerify()), clock.instant());
         if (changed) {
             repository.saveAndFlush(item);
             publishChanged(item);
+            if (item.getStatus() == KnowledgeStatus.FALSIFIED && previousStatus != KnowledgeStatus.FALSIFIED) {
+                // Open decisions resting on it should be looked at again.
+                decisionService.assumptionFalsified(userId, item.getId(), item.getStatement(), item.getVerifiedAt());
+            }
         }
         return knowledgeItemMapper.toResponse(item);
     }

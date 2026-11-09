@@ -5,6 +5,7 @@ import com.lifeos.strategy.decision.dto.CloseDecisionRequest;
 import com.lifeos.strategy.decision.dto.DecideRequest;
 import com.lifeos.strategy.decision.dto.DecisionDraftRequest;
 import com.lifeos.strategy.decision.dto.DecisionResponse;
+import com.lifeos.strategy.decision.dto.ReopenDecisionRequest;
 import com.lifeos.strategy.decision.entity.DecisionStatus;
 import com.lifeos.strategy.decision.service.DecisionService;
 import jakarta.validation.Valid;
@@ -40,11 +41,15 @@ public class DecisionController {
         return ResponseEntity.created(URI.create("/api/strategy/decisions/" + decision.id())).body(decision);
     }
 
-    /** Newest first; {@code ?status=OPEN&goalId=...} narrows the list. */
+    /**
+     * Newest first; {@code ?status=OPEN&goalId=...} narrows the list, {@code ?needsReview=true} keeps the OPEN
+     * decisions that rest on a falsified assumption.
+     */
     @GetMapping
     public List<DecisionResponse> list(@CurrentUser UUID userId,
-            @RequestParam(required = false) DecisionStatus status, @RequestParam(required = false) UUID goalId) {
-        return decisionService.list(userId, status, goalId);
+            @RequestParam(required = false) DecisionStatus status, @RequestParam(required = false) UUID goalId,
+            @RequestParam(defaultValue = "false") boolean needsReview) {
+        return decisionService.list(userId, status, goalId, needsReview);
     }
 
     @GetMapping("/{decisionId}")
@@ -71,5 +76,13 @@ public class DecisionController {
     public DecisionResponse close(@CurrentUser UUID userId, @PathVariable UUID decisionId,
             @Valid @RequestBody CloseDecisionRequest request) {
         return decisionService.close(userId, decisionId, request);
+    }
+
+    /** OPEN or CLOSED: a new draft that weighs it again; the original stays as it is. */
+    @PostMapping("/{decisionId}/reopen")
+    public ResponseEntity<DecisionResponse> reopen(@CurrentUser UUID userId, @PathVariable UUID decisionId,
+            @Valid @RequestBody ReopenDecisionRequest request) {
+        DecisionResponse draft = decisionService.reopen(userId, decisionId, request);
+        return ResponseEntity.created(URI.create("/api/strategy/decisions/" + draft.id())).body(draft);
     }
 }

@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,12 @@ public class Decision extends AssignedIdEntity {
     private WouldDecideAgain wouldDecideAgain;
 
     private Instant closedAt;
+
+    /** The decision this draft was reopened from, and why. */
+    private UUID reopenedFromId;
+    private String reopenReason;
+
+    private Instant supersededAt;
 
     @Version
     private int version;
@@ -142,6 +149,43 @@ public class Decision extends AssignedIdEntity {
         this.updatedAt = now;
     }
 
+    /**
+     * A new draft that weighs {@code original} again: same goal, title, context, alternatives (none chosen; the
+     * rejection reasons are kept as a starting point), assumptions and reopen triggers (not fired). The original
+     * is not changed; deciding the draft supersedes it if it is still OPEN.
+     */
+    public static Decision reopen(Decision original, String reason, Instant now) {
+        if (!original.status.canBeReopened()) {
+            throw new LifeOsException(StrategyErrorCode.STRATEGY_DECISION_STATUS,
+                    "Only a decided decision can be reopened; this one is " + original.status.name().toLowerCase()
+                            + ".",
+                    Map.of("currentStatus", original.status.name()));
+        }
+        Map<String, String> reasons = new HashMap<>();
+        for (Alternative alternative : original.alternatives) {
+            if (alternative.getRejectionReason() != null) {
+                reasons.put(alternative.getLabel(), alternative.getRejectionReason());
+            }
+        }
+        List<ReopenTrigger> triggers = original.reopenTriggers.stream()
+                .map(t -> new ReopenTrigger(t.getKind(), t.getDescription(), t.getEventType(), t.getFiresOn()))
+                .toList();
+        Decision draft = draft(original.userId, original.goalId, original.title, original.context,
+                original.alternatives.stream().map(Alternative::getDescription).toList(), reasons,
+                original.assumptionIds, triggers, now);
+        draft.reopenedFromId = original.id;
+        draft.reopenReason = Objects.requireNonNull(reason);
+        return draft;
+    }
+
+    /** OPEN → SUPERSEDED: the decision reopened from this one was decided. */
+    public void supersede(Instant now) {
+        requireStatus(DecisionStatus.OPEN);
+        this.status = DecisionStatus.SUPERSEDED;
+        this.supersededAt = now;
+        this.updatedAt = now;
+    }
+
     public void requireStatus(DecisionStatus expected) {
         if (status != expected) {
             throw new LifeOsException(StrategyErrorCode.STRATEGY_DECISION_STATUS,
@@ -209,6 +253,18 @@ public class Decision extends AssignedIdEntity {
 
     public Instant getClosedAt() {
         return closedAt;
+    }
+
+    public UUID getReopenedFromId() {
+        return reopenedFromId;
+    }
+
+    public String getReopenReason() {
+        return reopenReason;
+    }
+
+    public Instant getSupersededAt() {
+        return supersededAt;
     }
 
     public int getVersion() {

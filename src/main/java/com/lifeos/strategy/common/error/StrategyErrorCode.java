@@ -29,6 +29,9 @@ public enum StrategyErrorCode implements ErrorCode {
     /** The decision's status does not allow the operation, e.g. editing a decision that was already made. */
     STRATEGY_DECISION_STATUS(409, "Decision status does not allow this"),
 
+    /** The decision was reopened already; the decision reopened from it is the one to work on. */
+    STRATEGY_DECISION_ALREADY_REOPENED(409, "Decision already reopened"),
+
     /** The idea's status does not allow the operation, e.g. activating a dropped idea. */
     STRATEGY_IDEA_STATUS(409, "Idea status does not allow this"),
 

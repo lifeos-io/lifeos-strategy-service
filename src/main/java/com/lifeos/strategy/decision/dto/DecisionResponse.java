@@ -8,6 +8,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @param reopenedFromId         the decision this one was reopened from, if any
+ * @param reopenedAsId           the decision reopened from this one, if any
+ * @param falsifiedAssumptionIds assumptions it rests on that are FALSIFIED now: a reason to look at it again
+ */
 public record DecisionResponse(
         UUID id,
         UUID goalId,
@@ -23,6 +28,11 @@ public record DecisionResponse(
         String outcomeNote,
         WouldDecideAgain wouldDecideAgain,
         Instant closedAt,
+        UUID reopenedFromId,
+        String reopenReason,
+        UUID reopenedAsId,
+        Instant supersededAt,
+        List<UUID> falsifiedAssumptionIds,
         int version,
         Instant createdAt,
         Instant updatedAt) {
