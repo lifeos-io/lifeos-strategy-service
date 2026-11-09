@@ -178,6 +178,22 @@ public class Decision extends AssignedIdEntity {
         return draft;
     }
 
+    /**
+     * Records that the reopen trigger at {@code position} fired (Trigger's {@code ReopenTriggerFired}). Only an
+     * OPEN decision is still watched; a trigger fires once.
+     *
+     * @return whether the trigger was marked now
+     */
+    public boolean markTriggerFired(int position, Instant firedAt) {
+        if (status != DecisionStatus.OPEN || position < 0 || position >= reopenTriggers.size()
+                || reopenTriggers.get(position).getFiredAt() != null) {
+            return false;
+        }
+        reopenTriggers.set(position, reopenTriggers.get(position).fired(firedAt));
+        this.updatedAt = firedAt;
+        return true;
+    }
+
     /** OPEN → SUPERSEDED: the decision reopened from this one was decided. */
     public void supersede(Instant now) {
         requireStatus(DecisionStatus.OPEN);

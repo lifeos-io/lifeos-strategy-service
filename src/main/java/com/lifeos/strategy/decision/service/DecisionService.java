@@ -45,4 +45,10 @@ public interface DecisionService {
      * {@code DecisionAssumptionFalsified} for each OPEN decision that rests on it.
      */
     void assumptionFalsified(UUID userId, UUID knowledgeItemId, String statement, Instant falsifiedAt);
+
+    /**
+     * Trigger fired the decision's reopen trigger at {@code position} ({@code ReopenTriggerFired}): records it on
+     * the trigger. A decision that is gone or no longer OPEN, or a trigger already fired, is left as it is.
+     */
+    void reopenTriggerFired(UUID userId, UUID decisionId, int position, Instant firedAt);
 }

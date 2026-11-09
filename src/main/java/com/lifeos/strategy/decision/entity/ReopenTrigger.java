@@ -32,6 +32,13 @@ public class ReopenTrigger {
         this.firesOn = firesOn;
     }
 
+    /** The same trigger, marked as fired at {@code firedAt} (embeddables are values: a new one replaces it). */
+    public ReopenTrigger fired(Instant firedAt) {
+        ReopenTrigger fired = new ReopenTrigger(kind, description, eventType, firesOn);
+        fired.firedAt = Objects.requireNonNull(firedAt);
+        return fired;
+    }
+
     public TriggerKind getKind() {
         return kind;
     }

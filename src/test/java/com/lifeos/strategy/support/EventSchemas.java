@@ -36,6 +36,11 @@ public final class EventSchemas {
         assertValid("schemas/coach/" + eventType + ".v" + version + ".schema.json", payload);
     }
 
+    /** A Trigger event payload Strategy consumes, e.g. {@code ("ReopenTriggerFired", 1, payload)}. */
+    public static void assertValidTriggerPayload(String eventType, int version, JsonNode payload) {
+        assertValid("schemas/trigger/" + eventType + ".v" + version + ".schema.json", payload);
+    }
+
     private static void assertValid(String resource, JsonNode json) {
         List<Error> errors = load(resource).validate(json);
         assertEquals(List.of(), errors.stream().map(Error::toString).toList(), resource + " rejects " + json);

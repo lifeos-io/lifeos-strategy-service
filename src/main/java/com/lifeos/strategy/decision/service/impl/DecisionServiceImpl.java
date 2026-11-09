@@ -41,11 +41,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DecisionServiceImpl implements DecisionService {
+
+    private static final Logger log = LoggerFactory.getLogger(DecisionServiceImpl.class);
 
     private final DecisionRepository repository;
     private final GoalRepository goalRepository;
@@ -194,6 +198,16 @@ public class DecisionServiceImpl implements DecisionService {
                     DecisionAssumptionFalsifiedV1.TYPE, DecisionAssumptionFalsifiedV1.VERSION,
                     decisionMapper.toAssumptionFalsifiedEvent(decision, knowledgeItemId, statement, falsifiedAt)));
         }
+    }
+
+    @Override
+    @Transactional
+    public void reopenTriggerFired(UUID userId, UUID decisionId, int position, Instant firedAt) {
+        repository.findByIdAndUserId(decisionId, userId)
+                .filter(decision -> decision.markTriggerFired(position, firedAt))
+                .ifPresentOrElse(repository::saveAndFlush,
+                        () -> log.info("Reopen trigger {} of decision {} not marked: decision gone, no longer open, "
+                                + "or trigger already fired", position, decisionId));
     }
 
     /** A reopened decision was decided: an original that is still OPEN is replaced by it. */
